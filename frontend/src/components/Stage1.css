@@ -1,14 +1,14 @@
 .stage {
   margin: 24px 0;
   padding: 20px;
-  background: #fafafa;
+  background: #161b22;
   border-radius: 8px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #30363d;
 }
 
 .stage-title {
   margin: 0 0 16px 0;
-  color: #333;
+  color: #e6edf3;
   font-size: 16px;
   font-weight: 600;
 }
@@ -22,44 +22,44 @@
 
 .tab {
   padding: 8px 16px;
-  background: #ffffff;
-  border: 1px solid #d0d0d0;
+  background: #21262d;
+  border: 1px solid #30363d;
   border-radius: 6px 6px 0 0;
-  color: #666;
+  color: #8b949e;
   cursor: pointer;
   font-size: 14px;
   transition: all 0.2s;
 }
 
 .tab:hover {
-  background: #f0f0f0;
-  color: #333;
-  border-color: #4a90e2;
+  background: #1f2937;
+  color: #e6edf3;
+  border-color: #58a6ff;
 }
 
 .tab.active {
-  background: #ffffff;
-  color: #4a90e2;
-  border-color: #4a90e2;
-  border-bottom-color: #ffffff;
+  background: #0d1117;
+  color: #58a6ff;
+  border-color: #58a6ff;
+  border-bottom-color: #0d1117;
   font-weight: 600;
 }
 
 .tab-content {
-  background: #ffffff;
+  background: #0d1117;
   padding: 16px;
   border-radius: 6px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #30363d;
 }
 
 .model-name {
-  color: #888;
+  color: #6e7681;
   font-size: 12px;
   margin-bottom: 12px;
   font-family: monospace;
 }
 
 .response-text {
-  color: #333;
+  color: #e6edf3;
   line-height: 1.6;
 }

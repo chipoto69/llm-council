@@ -19,7 +19,8 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: #f5f5f5;
+  background: #0d1117;
+  color: #e6edf3;
 }
 
 #root {
@@ -35,6 +36,7 @@ body {
 
 .markdown-content p {
   margin: 0 0 12px 0;
+  color: #e6edf3;
 }
 
 .markdown-content p:last-child {
@@ -48,6 +50,7 @@ body {
 .markdown-content h5,
 .markdown-content h6 {
   margin: 16px 0 8px 0;
+  color: #e6edf3;
 }
 
 .markdown-content h1:first-child,
@@ -70,19 +73,21 @@ body {
 }
 
 .markdown-content pre {
-  background: #f5f5f5;
+  background: #161b22;
   padding: 12px;
   border-radius: 4px;
   overflow-x: auto;
   margin: 0 0 12px 0;
+  border: 1px solid #30363d;
 }
 
 .markdown-content code {
-  background: #f5f5f5;
+  background: #21262d;
   padding: 2px 6px;
   border-radius: 3px;
   font-family: monospace;
   font-size: 0.9em;
+  color: #e6edf3;
 }
 
 .markdown-content pre code {
@@ -93,6 +98,6 @@ body {
 .markdown-content blockquote {
   margin: 0 0 12px 0;
   padding-left: 16px;
-  border-left: 4px solid #ddd;
-  color: #666;
+  border-left: 4px solid #30363d;
+  color: #8b949e;
 }
