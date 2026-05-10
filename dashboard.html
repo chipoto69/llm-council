@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LLM Council — Dashboard</title>
+<style>
+  :root {
+    --bg-root: #080c14;
+    --bg-surface: #111827;
+    --bg-elevated: #1a2236;
+    --bg-hover: #1f2a3f;
+    --bg-input: #0d1321;
+    --border: #1e293b;
+    --border-light: #263348;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --accent: #3b82f6;
+    --accent-glow: rgba(59, 130, 246, 0.15);
+    --accent-soft: #1d4ed8;
+    --green: #22c55e;
+    --green-bg: rgba(34, 197, 94, 0.08);
+    --green-border: rgba(34, 197, 94, 0.2);
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --cyan: #22d3ee;
+    --purple: #a855f7;
+    --radius: 8px;
+    --radius-sm: 5px;
+    --radius-lg: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg-root);
+    color: var(--text-primary);
+    height: 100vh;
+    overflow: hidden;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .app {
+    display: grid;
+    grid-template-columns: 280px 1fr 340px;
+    height: 100vh;
+    gap: 0;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    background: var(--bg-surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  .sidebar-header {
+    padding: 20px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-icon {
+    width: 32px; height: 32px;
+    border-radius: 7px;
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 700; color: #fff;
+  }
+
+  .logo-text {
+    font-size: 16px; font-weight: 700; color: var(--text-primary);
+    letter-spacing: -0.3px;
+  }
+
+  .btn {
+    padding: 10px 16px;
+    border-radius: var(--radius-sm);
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    width: 100%;
+  }
+  .btn-primary:hover { background: #2563eb; }
+
+  .mode-toggle {
+    display: flex;
+    background: var(--bg-input);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .mode-btn {
+    flex: 1; padding: 8px 0;
+    background: none; border: none; color: var(--text-muted);
+    font-size: 11px; font-weight: 600; cursor: pointer;
+    font-family: inherit; transition: all 0.15s;
+    letter-spacing: 0.3px; text-transform: uppercase;
+  }
+  .mode-btn.active {
+    background: var(--accent); color: #fff;
+  }
+
+  .conv-list {
+    flex: 1; overflow-y: auto; padding: 8px;
+  }
+
+  .conv-item {
+    padding: 12px; border-radius: var(--radius);
+    cursor: pointer; transition: background 0.12s;
+    margin-bottom: 2px; position: relative;
+    border: 1px solid transparent;
+  }
+  .conv-item:hover { background: var(--bg-hover); }
+  .conv-item.active { background: var(--accent-glow); border-color: rgba(59,130,246,0.2); }
+
+  .conv-title {
+    font-size: 13px; font-weight: 500; color: var(--text-primary);
+    margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .conv-meta {
+    font-size: 11px; color: var(--text-muted);
+    display: flex; gap: 8px;
+  }
+  .conv-badge {
+    font-size: 10px; padding: 1px 6px;
+    border-radius: 3px; font-weight: 600;
+  }
+  .badge-council { background: rgba(59,130,246,0.2); color: #60a5fa; }
+  .badge-auto { background: rgba(168,85,247,0.2); color: #c084fc; }
+  .badge-converged { background: rgba(34,197,94,0.2); color: #4ade80; }
+  .badge-active { background: rgba(245,158,11,0.2); color: #fbbf24; }
+
+  .empty-convs {
+    padding: 32px 16px; text-align: center; color: var(--text-muted);
+    font-size: 13px;
+  }
+  .empty-convs p { margin-top: 6px; }
+
+  /* ── Main Panel ── */
+  .main {
+    display: flex; flex-direction: column;
+    background: var(--bg-root);
+    height: 100vh;
+    min-width: 0;
+  }
+
+  .main-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--bg-surface);
+  }
+
+  .main-title { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+  .main-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  .header-actions { display: flex; gap: 8px; }
+
+  .btn-sm {
+    padding: 6px 14px; font-size: 12px;
+    border-radius: var(--radius-sm); border: 1px solid var(--border);
+    background: var(--bg-elevated); color: var(--text-secondary);
+    cursor: pointer; font-family: inherit; font-weight: 500;
+    transition: all 0.15s;
+  }
+  .btn-sm:hover { border-color: var(--accent); color: var(--accent); }
+
+  .dashboard-grid {
+    flex: 1; overflow-y: auto; padding: 24px;
+    display: grid; grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto 1fr;
+    gap: 16px;
+  }
+
+  .card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px;
+  }
+
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .card-title {
+    font-size: 13px; font-weight: 600; color: var(--text-primary);
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .card-count {
+    font-size: 11px; color: var(--text-muted);
+    background: var(--bg-hover); padding: 2px 8px; border-radius: 10px;
+  }
+
+  /* ── Model Lineup Card ── */
+  .model-lineup {
+    display: flex; flex-direction: column; gap: 8px;
+  }
+
+  .model-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: var(--radius);
+    background: var(--bg-elevated); border: 1px solid var(--border);
+  }
+
+  .model-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .dot-online { background: var(--green); box-shadow: 0 0 6px rgba(34,197,94,0.4); }
+  .dot-warming { background: var(--amber); box-shadow: 0 0 6px rgba(245,158,11,0.3); }
+  .dot-offline { background: var(--text-muted); }
+
+  .model-info { flex: 1; min-width: 0; }
+  .model-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+  .model-provider { font-size: 11px; color: var(--text-muted); }
+
+  .model-role {
+    font-size: 10px; padding: 2px 8px; border-radius: 3px;
+    font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px;
+    flex-shrink: 0;
+  }
+  .role-member { background: rgba(59,130,246,0.2); color: #60a5fa; }
+  .role-chair { background: rgba(168,85,247,0.2); color: #c084fc; }
+
+  /* ── Query Input ── */
+  .query-card { grid-column: 1 / -1; }
+
+  .query-form { display: flex; gap: 8px; }
+
+  .query-input {
+    flex: 1; padding: 12px 16px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-primary);
+    font-size: 14px; font-family: inherit; outline: none;
+    transition: border 0.15s;
+  }
+  .query-input::placeholder { color: var(--text-muted); }
+  .query-input:focus { border-color: var(--accent); }
+
+  .query-modes { display: flex; gap: 4px; }
+
+  .query-mode {
+    padding: 10px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    font-family: inherit; transition: all 0.15s;
+    text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap;
+  }
+  .query-mode:hover { border-color: var(--accent); }
+  .query-mode.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  .query-submit {
+    padding: 12px 24px;
+    background: var(--accent); color: #fff;
+    border: none; border-radius: var(--radius);
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    font-family: inherit; transition: background 0.15s; white-space: nowrap;
+  }
+  .query-submit:hover { background: #2563eb; }
+  .query-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .query-meta-row {
+    display: flex; gap: 16px; margin-top: 10px;
+    font-size: 11px; color: var(--text-muted);
+  }
+  .query-meta-row span { display: flex; align-items: center; gap: 4px; }
+
+  /* ── Activity Feed ── */
+  .activity-feed {
+    grid-column: 1 / -1;
+    display: flex; flex-direction: column; gap: 6px;
+    min-height: 0;
+  }
+
+  .activity-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px; border-radius: var(--radius);
+    background: var(--bg-elevated); border: 1px solid transparent;
+    transition: border 0.12s;
+    font-size: 13px;
+  }
+  .activity-item:hover { border-color: var(--border); }
+
+  .activity-dot {
+    width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+  }
+  .act-council { background: var(--accent); }
+  .act-auto { background: var(--purple); }
+  .act-converged { background: var(--green); }
+
+  .activity-query { flex: 1; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .activity-time { font-size: 11px; color: var(--text-muted); flex-shrink: 0; }
+  .activity-models { font-size: 10px; color: var(--text-muted); flex-shrink: 0; }
+
+  /* ── Right Panel ── */
+  .right-panel {
+    background: var(--bg-surface);
+    border-left: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    height: 100vh; overflow-y: auto;
+    padding: 20px 16px;
+    gap: 16px;
+  }
+
+  .stat-group { display: flex; flex-direction: column; gap: 10px; }
+
+  .stat-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 12px; border-radius: var(--radius);
+    background: var(--bg-elevated);
+  }
+  .stat-label { font-size: 12px; color: var(--text-secondary); }
+  .stat-value { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+
+  .stat-bar {
+    height: 3px; background: var(--bg-hover); border-radius: 2px;
+    margin-top: 6px; overflow: hidden;
+  }
+  .stat-fill {
+    height: 100%; border-radius: 2px; transition: width 0.5s ease;
+  }
+  .fill-blue { background: var(--accent); }
+  .fill-green { background: var(--green); }
+  .fill-purple { background: var(--purple); }
+
+  /* ── Deliberation Live View ── */
+  .live-stage {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .stage-header {
+    padding: 10px 14px; background: var(--bg-elevated);
+    font-size: 12px; font-weight: 600; color: var(--text-secondary);
+    text-transform: uppercase; letter-spacing: 0.4px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .stage-badge {
+    font-size: 10px; padding: 2px 8px; border-radius: 3px;
+    font-weight: 700;
+  }
+  .stage-live { background: rgba(34,197,94,0.15); color: var(--green); }
+  .stage-done { background: rgba(59,130,246,0.15); color: #60a5fa; }
+
+  .stage-body {
+    padding: 14px; display: flex; flex-direction: column; gap: 8px;
+  }
+
+  .model-card {
+    padding: 10px 12px; border-radius: var(--radius-sm);
+    background: var(--bg-elevated); border: 1px solid var(--border);
+    font-size: 13px; line-height: 1.6;
+  }
+  .model-card .name { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; margin-bottom: 4px; }
+  .model-card .preview { color: var(--text-secondary); }
+
+  .ranking-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: var(--radius-sm);
+    background: var(--bg-elevated);
+  }
+  .rank-num { font-size: 13px; font-weight: 700; color: var(--accent); width: 20px; text-align: center; }
+  .rank-model { flex: 1; font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+  .rank-votes { font-size: 11px; color: var(--text-secondary); }
+
+  .empty-state-dashboard {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; height: 100%; opacity: 0.4;
+    text-align: center; gap: 8px;
+  }
+  .empty-state-dashboard h2 { font-size: 22px; color: var(--text-primary); }
+  .empty-state-dashboard p { font-size: 14px; color: var(--text-muted); max-width: 360px; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border-light); }
+
+  /* ── Responsive ── */
+  @media (max-width: 1200px) {
+    .app { grid-template-columns: 260px 1fr; }
+    .right-panel { display: none; }
+  }
+  @media (max-width: 768px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar, .right-panel { display: none; }
+    .dashboard-grid { grid-template-columns: 1fr; padding: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ─── SIDEBAR ─── -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-icon">⚖</div>
+        <span class="logo-text">LLM Council</span>
+      </div>
+      <button class="btn btn-primary" onclick="handleNew()">+ New Deliberation</button>
+      <div class="mode-toggle" id="modeToggle">
+        <button class="mode-btn active" data-mode="council" onclick="setMode('council')">Council</button>
+        <button class="mode-btn" data-mode="auto" onclick="setMode('auto')">Autocouncil</button>
+      </div>
+    </div>
+    <div class="conv-list" id="convList">
+      <div class="conv-item active">
+        <div class="conv-title">Evaluation velocity in engineering</div>
+        <div class="conv-meta">
+          <span class="conv-badge badge-converged">converged</span>
+          <span>3 rounds</span>
+        </div>
+      </div>
+      <div class="conv-item">
+        <div class="conv-title">Postgres vs SQLite for project</div>
+        <div class="conv-meta">
+          <span class="conv-badge badge-council">council</span>
+          <span>1 round</span>
+        </div>
+      </div>
+      <div class="conv-item">
+        <div class="conv-title">Architecture: monolith or microservices</div>
+        <div class="conv-meta">
+          <span class="conv-badge badge-auto">autocouncil</span>
+          <span>2 rounds</span>
+        </div>
+      </div>
+      <div class="conv-item">
+        <div class="conv-title">Best approach to learn Rust</div>
+        <div class="conv-meta">
+          <span class="conv-badge badge-active">in progress</span>
+          <span>round 2/5</span>
+        </div>
+      </div>
+    </div>
+    <div style="padding: 12px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text-muted); text-align: center;">
+      chipoto69/llm-council · v0.2.0
+    </div>
+  </aside>
+
+  <!-- ─── MAIN PANEL ─── -->
+  <main class="main">
+    <div class="main-header">
+      <div>
+        <div class="main-title">Council Chamber</div>
+        <div class="main-subtitle">3 models · 12 deliberations · 87% convergence rate</div>
+      </div>
+      <div class="header-actions">
+        <button class="btn-sm">Export</button>
+        <button class="btn-sm">Settings</button>
+      </div>
+    </div>
+
+    <div class="dashboard-grid">
+
+      <!-- Query Input -->
+      <div class="card query-card">
+        <div class="card-header">
+          <span class="card-title">New Deliberation</span>
+        </div>
+        <div class="query-form">
+          <input class="query-input" placeholder="Ask the council anything..." id="queryInput" autofocus>
+          <div class="query-modes">
+            <button class="query-mode active" id="modeCouncil" onclick="selectQueryMode('council')">1×</button>
+            <button class="query-mode" id="modeAuto" onclick="selectQueryMode('auto')">∞</button>
+          </div>
+          <button class="query-submit" onclick="handleSubmit()">Convene →</button>
+        </div>
+        <div class="query-meta-row">
+          <span>📋 Council: Qwen 3.5 · DeepSeek V4 · GLM 5.1</span>
+          <span>👔 Chair: DeepSeek V4</span>
+          <span id="modeLabel">Mode: Single deliberation</span>
+        </div>
+      </div>
+
+      <!-- Model Lineup -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Active Council</span>
+          <span class="card-count">3 members</span>
+        </div>
+        <div class="model-lineup">
+          <div class="model-row">
+            <div class="model-dot dot-online"></div>
+            <div class="model-info">
+              <div class="model-name">Qwen 3.5 235B</div>
+              <div class="model-provider">OpenRouter</div>
+            </div>
+            <span class="model-role role-member">Member</span>
+          </div>
+          <div class="model-row">
+            <div class="model-dot dot-online"></div>
+            <div class="model-info">
+              <div class="model-name">DeepSeek V4 Pro</div>
+              <div class="model-provider">DeepSeek</div>
+            </div>
+            <span class="model-role role-chair">Chair</span>
+          </div>
+          <div class="model-row">
+            <div class="model-dot dot-online"></div>
+            <div class="model-info">
+              <div class="model-name">GLM 5.1</div>
+              <div class="model-provider">OpenRouter</div>
+            </div>
+            <span class="model-role role-member">Member</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Performance</span>
+          <span class="card-count">Last 24h</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="stat-row">
+            <span class="stat-label">Convergence Rate</span>
+            <span class="stat-value">87%</span>
+          </div>
+          <div class="stat-bar"><div class="stat-fill fill-green" style="width:87%"></div></div>
+          <div class="stat-row">
+            <span class="stat-label">Avg. Rounds</span>
+            <span class="stat-value">2.1</span>
+          </div>
+          <div class="stat-bar"><div class="stat-fill fill-blue" style="width:42%"></div></div>
+          <div class="stat-row">
+            <span class="stat-label">Autocouncil Rate</span>
+            <span class="stat-value">63%</span>
+          </div>
+          <div class="stat-bar"><div class="stat-fill fill-purple" style="width:63%"></div></div>
+        </div>
+      </div>
+
+      <!-- Activity Feed -->
+      <div class="card activity-feed">
+        <div class="card-header">
+          <span class="card-title">Recent Deliberations</span>
+          <span class="card-count">12 total</span>
+        </div>
+        <div class="activity-item">
+          <div class="activity-dot act-converged"></div>
+          <span class="activity-query">Most undervalued skill in software engineering?</span>
+          <span class="activity-models">3 models</span>
+          <span class="activity-time">2m ago</span>
+        </div>
+        <div class="activity-item">
+          <div class="activity-dot act-council"></div>
+          <span class="activity-query">Postgres vs SQLite for a CLI tool?</span>
+          <span class="activity-models">3 models</span>
+          <span class="activity-time">18m ago</span>
+        </div>
+        <div class="activity-item">
+          <div class="activity-dot act-auto"></div>
+          <span class="activity-query">Should we use gRPC or REST for internal services?</span>
+          <span class="activity-models">3 models</span>
+          <span class="activity-time">1h ago</span>
+        </div>
+        <div class="activity-item">
+          <div class="activity-dot act-converged"></div>
+          <span class="activity-query">Architecture pattern for real-time trading system?</span>
+          <span class="activity-models">3 models</span>
+          <span class="activity-time">3h ago</span>
+        </div>
+        <div class="activity-item">
+          <div class="activity-dot act-council"></div>
+          <span class="activity-query">Rust vs Go for infrastructure tooling?</span>
+          <span class="activity-models">3 models</span>
+          <span class="activity-time">6h ago</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ─── RIGHT PANEL ─── -->
+  <aside class="right-panel">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:13px;font-weight:600;color:var(--text-primary);">Live View</span>
+      <span class="conv-badge badge-active" style="font-size:10px;">monitoring</span>
+    </div>
+
+    <!-- Stage 1 -->
+    <div class="live-stage">
+      <div class="stage-header">
+        Stage 1 — First Opinions
+        <span class="stage-badge stage-done">done</span>
+      </div>
+      <div class="stage-body">
+        <div class="model-card">
+          <div class="name">deepseek-v4-pro</div>
+          <div class="preview">Evaluation velocity under abundance — the ability to sort signal from noise...</div>
+        </div>
+        <div class="model-card">
+          <div class="name">qwen/qwen3-235b</div>
+          <div class="preview">The most undervalued skill is architectural taste — knowing what NOT to build...</div>
+        </div>
+        <div class="model-card">
+          <div class="name">z-ai/glm-5.1</div>
+          <div class="preview">Debugging intuition. The ability to form correct hypotheses about failure...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stage 2 -->
+    <div class="live-stage">
+      <div class="stage-header">
+        Stage 2 — Peer Rankings
+        <span class="stage-badge stage-done">done</span>
+      </div>
+      <div class="stage-body">
+        <div class="ranking-row">
+          <span class="rank-num">#1</span>
+          <span class="rank-model">deepseek-v4-pro</span>
+          <span class="rank-votes">8 pts</span>
+        </div>
+        <div class="ranking-row">
+          <span class="rank-num">#2</span>
+          <span class="rank-model">qwen/qwen3-235b</span>
+          <span class="rank-votes">5 pts</span>
+        </div>
+        <div class="ranking-row">
+          <span class="rank-num">#3</span>
+          <span class="rank-model">z-ai/glm-5.1</span>
+          <span class="rank-votes">3 pts</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stage 3 -->
+    <div class="live-stage">
+      <div class="stage-header">
+        Stage 3 — Chairman Synthesis
+        <span class="stage-badge stage-live">live</span>
+      </div>
+      <div class="stage-body">
+        <div class="model-card" style="border-color:rgba(168,85,247,0.3);">
+          <div class="name" style="color:#c084fc;">👔 deepseek-v4-pro (Chairman)</div>
+          <div class="preview">The council converges on a nuanced position: the most undervalued skill is not just "subtraction" but evaluation velocity under conditions of AI-generated abundance. When output is cheap, judgment becomes the bottleneck...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div style="display:flex;gap:6px;">
+      <button class="btn-sm" style="flex:1;">Export MD</button>
+      <button class="btn-sm" style="flex:1;">Copy JSON</button>
+      <button class="btn-sm" style="flex:1;">Rerun</button>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+  let currentMode = 'council';
+
+  function setMode(mode) {
+    currentMode = mode;
+    document.querySelectorAll('.mode-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.mode === mode);
+    });
+    document.getElementById('modeLabel').textContent = 
+      mode === 'auto' ? 'Mode: Autocouncil (looped until convergence)' : 'Mode: Single deliberation';
+    document.getElementById('modeCouncil').classList.toggle('active', mode === 'council');
+    document.getElementById('modeAuto').classList.toggle('active', mode === 'auto');
+  }
+
+  function selectQueryMode(mode) {
+    setMode(mode);
+  }
+
+  function handleNew() {
+    document.getElementById('queryInput').focus();
+    document.getElementById('queryInput').value = '';
+  }
+
+  function handleSubmit() {
+    const q = document.getElementById('queryInput').value.trim();
+    if (!q) return;
+    const btn = document.querySelector('.query-submit');
+    btn.textContent = 'Deliberating...';
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.textContent = 'Convene →';
+      btn.disabled = false;
+      document.getElementById('queryInput').value = '';
+    }, 2000);
+  }
+
+  document.getElementById('queryInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  });
+</script>
+</body>
+</html>
