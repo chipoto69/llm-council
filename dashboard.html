@@ -3,625 +3,417 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LLM Council — Dashboard</title>
+<title>LLM Council</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg-canvas: #08090a;
-    --bg-panel: #0f1011;
-    --bg-surface: #191a1b;
-    --bg-elevated: #28282c;
-    --text-primary: #f7f8f8;
-    --text-secondary: #d0d6e0;
-    --text-tertiary: #8a8f98;
-    --text-quaternary: #62666d;
-    --accent: #5e6ad2;
-    --accent-soft: #7170ff;
-    --accent-hover: #828fff;
+    --bg-canvas: #08090a; --bg-panel: #0f1011; --bg-surface: #191a1b;
+    --text-primary: #f7f8f8; --text-secondary: #d0d6e0;
+    --text-tertiary: #8a8f98; --text-quaternary: #62666d;
+    --accent: #5e6ad2; --accent-soft: #7170ff; --accent-hover: #828fff;
     --border-subtle: rgba(255,255,255,0.05);
     --border-standard: rgba(255,255,255,0.08);
-    --green: #10b981;
-    --green-subtle: rgba(16,185,129,0.12);
-    --amber: #f59e0b;
-    --amber-subtle: rgba(245,158,11,0.12);
-    --radius-btn: 6px;
-    --radius-card: 8px;
-    --radius-panel: 12px;
-    --radius-pill: 9999px;
+    --green: #10b981; --green-subtle: rgba(16,185,129,0.12);
+    --radius-btn: 6px; --radius-card: 8px;
   }
-
   * { margin: 0; padding: 0; box-sizing: border-box; }
-
   body {
     font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     font-feature-settings: 'cv01', 'ss03';
-    background: var(--bg-canvas);
-    color: var(--text-primary);
-    height: 100vh;
-    overflow: hidden;
-    font-size: 15px;
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-    letter-spacing: -0.165px;
+    background: var(--bg-canvas); color: var(--text-primary);
+    height: 100vh; overflow: hidden;
+    font-size: 15px; line-height: 1.6;
+    -webkit-font-smoothing: antialiased; letter-spacing: -0.165px;
   }
-
   .app { display: flex; height: 100vh; }
 
-  /* ── Sidebar ── */
+  /* Sidebar */
   .sidebar {
-    width: 260px;
-    background: var(--bg-panel);
+    width: 260px; background: var(--bg-panel);
     border-right: 1px solid var(--border-subtle);
-    display: flex;
-    flex-direction: column;
-    flex-shrink: 0;
+    display: flex; flex-direction: column; flex-shrink: 0;
   }
-
-  .sidebar-header {
-    padding: 20px 16px;
-    border-bottom: 1px solid var(--border-subtle);
-  }
-
-  .logo {
-    display: flex; align-items: center; gap: 10px;
-  }
+  .sidebar-header { padding: 20px 16px; border-bottom: 1px solid var(--border-subtle); }
+  .logo { display: flex; align-items: center; gap: 10px; }
   .logo-mark {
-    width: 28px; height: 28px;
-    background: var(--accent);
+    width: 28px; height: 28px; background: var(--accent);
     border-radius: var(--radius-btn);
     display: flex; align-items: center; justify-content: center;
     font-family: 'JetBrains Mono', monospace;
     font-size: 13px; font-weight: 500; color: #fff;
   }
-  .logo-text {
-    font-size: 15px; font-weight: 510; color: var(--text-primary);
-    letter-spacing: -0.165px;
-  }
-
+  .logo-text { font-size: 15px; font-weight: 510; color: var(--text-primary); letter-spacing: -0.165px; }
   .new-btn {
-    margin-top: 14px; width: 100%;
-    padding: 8px 16px;
-    background: var(--accent);
-    border: none; border-radius: var(--radius-btn);
+    margin-top: 14px; width: 100%; padding: 8px 16px;
+    background: var(--accent); border: none; border-radius: var(--radius-btn);
     color: #fff; font-size: 13px; font-weight: 510;
-    font-family: inherit; cursor: pointer;
-    transition: background 0.12s;
+    font-family: inherit; cursor: pointer; transition: background 0.12s;
   }
   .new-btn:hover { background: var(--accent-hover); }
-
-  .conv-list {
-    flex: 1; overflow-y: auto; padding: 8px;
-  }
-
+  .new-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .conv-list { flex: 1; overflow-y: auto; padding: 8px; }
   .conv-item {
     padding: 10px 12px; border-radius: var(--radius-card);
-    cursor: pointer; transition: background 0.1s;
-    margin-bottom: 1px;
+    cursor: pointer; transition: background 0.1s; margin-bottom: 1px;
   }
   .conv-item:hover { background: rgba(255,255,255,0.02); }
   .conv-item.active { background: rgba(94,106,210,0.08); }
-
   .conv-title {
     font-size: 13px; font-weight: 510; color: var(--text-secondary);
     letter-spacing: -0.13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    margin-bottom: 2px;
   }
   .conv-item.active .conv-title { color: var(--text-primary); }
-
   .conv-meta {
     font-size: 11px; color: var(--text-quaternary);
-    display: flex; gap: 8px; align-items: center;
+    display: flex; gap: 8px; align-items: center; margin-top: 2px;
   }
+  .empty-convs { padding: 24px 16px; text-align: center; color: var(--text-quaternary); font-size: 13px; }
 
-  .pill {
-    font-size: 10px; font-weight: 510; padding: 1px 8px;
-    border-radius: var(--radius-pill); letter-spacing: normal;
-  }
-  .pill-green { background: var(--green-subtle); color: var(--green); }
-  .pill-indigo { background: rgba(94,106,210,0.15); color: var(--accent-soft); }
-
-  .sidebar-footer {
-    padding: 12px;
-    border-top: 1px solid var(--border-subtle);
-    font-size: 11px; color: var(--text-quaternary); text-align: center;
-  }
-
-  /* ── Main Panel ── */
-  .main {
-    flex: 1;
-    display: flex; flex-direction: column;
-    min-width: 0;
-    background: var(--bg-canvas);
-  }
-
-  /* Command bar */
+  /* Main */
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; background: var(--bg-canvas); }
   .cmd-bar {
     display: flex; align-items: center; gap: 12px;
-    padding: 14px 24px;
-    border-bottom: 1px solid var(--border-subtle);
+    padding: 14px 24px; border-bottom: 1px solid var(--border-subtle);
     background: var(--bg-panel);
   }
-
   .cmd-input {
     flex: 1; padding: 10px 16px;
     background: rgba(255,255,255,0.02);
     border: 1px solid var(--border-standard);
-    border-radius: var(--radius-btn);
-    color: var(--text-primary);
-    font-size: 15px; font-weight: 400;
-    font-family: inherit; outline: none;
-    letter-spacing: -0.165px;
-    transition: border 0.12s;
+    border-radius: var(--radius-btn); color: var(--text-primary);
+    font-size: 15px; font-weight: 400; font-family: inherit; outline: none;
+    letter-spacing: -0.165px; transition: border 0.12s;
   }
   .cmd-input::placeholder { color: var(--text-quaternary); }
   .cmd-input:focus { border-color: var(--accent-soft); }
-
-  .cmd-mode {
-    display: flex; gap: 1px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid var(--border-standard);
-    border-radius: var(--radius-btn);
-    overflow: hidden;
-  }
-  .cmd-mode button {
-    padding: 8px 14px;
-    background: none; border: none;
-    color: var(--text-quaternary);
-    font-size: 11px; font-weight: 510; font-family: inherit;
-    cursor: pointer; transition: all 0.15s;
-    text-transform: uppercase; letter-spacing: normal;
-  }
-  .cmd-mode button.active {
-    background: var(--accent); color: #fff;
-  }
-
+  .cmd-input:disabled { opacity: 0.4; }
   .cmd-submit {
-    padding: 10px 20px;
-    background: var(--accent); border: none;
-    border-radius: var(--radius-btn);
-    color: #fff; font-size: 13px; font-weight: 510;
-    font-family: inherit; cursor: pointer;
-    transition: background 0.12s;
+    padding: 10px 20px; background: var(--accent); border: none;
+    border-radius: var(--radius-btn); color: #fff;
+    font-size: 13px; font-weight: 510; font-family: inherit; cursor: pointer;
+    transition: background 0.12s; white-space: nowrap;
   }
   .cmd-submit:hover { background: var(--accent-hover); }
-
+  .cmd-submit:disabled { opacity: 0.4; cursor: not-allowed; }
   .cmd-meta {
-    padding: 6px 24px 0;
-    font-size: 12px; color: var(--text-quaternary);
+    padding: 6px 24px 0; font-size: 12px; color: var(--text-quaternary);
     display: flex; gap: 16px;
   }
 
-  /* Dashboard content */
-  .dashboard {
-    flex: 1; overflow-y: auto;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-auto-rows: min-content;
-    gap: 16px;
-    padding: 24px;
-  }
-
-  .card {
-    background: rgba(255,255,255,0.02);
-    border: 1px solid var(--border-standard);
-    border-radius: var(--radius-card);
-    padding: 16px;
-  }
-  .card-full { grid-column: 1 / -1; }
-
-  .card-hdr {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 14px;
-  }
-  .card-hdr-title {
+  /* Messages area */
+  .messages { flex: 1; overflow-y: auto; padding: 24px; }
+  .msg-group { margin-bottom: 32px; }
+  .user-msg { margin-bottom: 20px; }
+  .user-msg .label {
     font-size: 11px; font-weight: 510; color: var(--text-quaternary);
-    text-transform: uppercase; letter-spacing: normal;
+    text-transform: uppercase; letter-spacing: normal; margin-bottom: 6px;
   }
-
-  /* Model line-up */
-  .model-row {
-    display: flex; align-items: center; gap: 10px;
-    padding: 8px 0; border-bottom: 1px solid var(--border-subtle);
-  }
-  .model-row:last-child { border-bottom: none; }
-
-  .model-dot {
-    width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
-  }
-  .dot-on { background: var(--green); box-shadow: 0 0 5px rgba(16,185,129,0.3); }
-  .dot-warm { background: var(--amber); }
-
-  .model-info { flex: 1; min-width: 0; }
-  .model-name {
-    font-size: 13px; font-weight: 510; color: var(--text-primary);
-    letter-spacing: -0.13px;
-  }
-  .model-prov {
-    font-size: 11px; color: var(--text-quaternary); margin-top: 1px;
-  }
-
-  .model-tag {
-    font-size: 10px; font-weight: 510; padding: 2px 8px;
-    border-radius: var(--radius-pill);
+  .user-msg .content {
+    background: rgba(255,255,255,0.03);
     border: 1px solid var(--border-standard);
-    color: var(--text-tertiary);
-    text-transform: uppercase; letter-spacing: normal;
-  }
-  .model-tag.chair {
-    border-color: rgba(94,106,210,0.3);
-    background: rgba(94,106,210,0.08);
-    color: var(--accent-soft);
+    border-radius: var(--radius-card); padding: 14px;
+    color: var(--text-primary); line-height: 1.6;
+    font-size: 14px; white-space: pre-wrap; max-width: 80%;
   }
 
-  /* Stats */
-  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-  .stat {
-    padding: 12px; border-radius: var(--radius-card);
-    background: rgba(255,255,255,0.02);
-    border: 1px solid var(--border-subtle);
-  }
-  .stat-val {
-    font-size: 28px; font-weight: 510; color: var(--text-primary);
-    line-height: 1; margin-bottom: 4px;
-    letter-spacing: -0.576px;
-  }
-  .stat-label {
-    font-size: 12px; color: var(--text-quaternary); font-weight: 400;
-  }
-
-  /* Activity */
-  .act-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 8px 0; border-bottom: 1px solid var(--border-subtle);
-    font-size: 13px;
-  }
-  .act-item:last-child { border-bottom: none; }
-
-  .act-dot {
-    width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
-  }
-  .act-g { background: var(--green); }
-  .act-a { background: var(--accent); }
-
-  .act-q { flex: 1; color: var(--text-primary); font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .act-meta { font-size: 11px; color: var(--text-quaternary); flex-shrink: 0; }
-
-  /* ── Right Panel: Live Deliberation ── */
-  .right {
-    width: 340px; flex-shrink: 0;
-    background: var(--bg-panel);
-    border-left: 1px solid var(--border-subtle);
-    display: flex; flex-direction: column;
-    overflow-y: auto;
-  }
-
-  .right-hdr {
-    padding: 16px;
-    border-bottom: 1px solid var(--border-subtle);
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .right-title {
-    font-size: 13px; font-weight: 510; color: var(--text-primary);
-  }
-  .right-status {
-    font-size: 10px; font-weight: 510; padding: 2px 8px;
-    border-radius: var(--radius-pill);
-    background: var(--green-subtle); color: var(--green);
-    text-transform: uppercase; letter-spacing: normal;
-  }
-
-  .stage-block {
-    margin: 12px;
+  .stage {
+    margin-bottom: 20px;
     background: rgba(255,255,255,0.02);
     border: 1px solid var(--border-standard);
-    border-radius: var(--radius-card);
-    overflow: hidden;
+    border-radius: var(--radius-card); overflow: hidden;
   }
   .stage-hdr {
-    padding: 8px 14px;
-    background: rgba(255,255,255,0.02);
+    padding: 8px 14px; background: rgba(255,255,255,0.02);
     border-bottom: 1px solid var(--border-subtle);
     display: flex; align-items: center; justify-content: space-between;
     font-size: 11px; font-weight: 510; color: var(--text-quaternary);
     text-transform: uppercase; letter-spacing: normal;
   }
-  .stage-dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--green);
+  .stage-hdr .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+  .stage-body { padding: 14px; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+  .tab {
+    padding: 4px 12px; font-size: 12px; font-weight: 510;
+    background: rgba(255,255,255,0.02); border: 1px solid var(--border-standard);
+    border-radius: var(--radius-btn); color: var(--text-tertiary);
+    cursor: pointer; font-family: inherit; transition: all 0.12s;
   }
-
-  .stage-content { padding: 12px; }
-
-  .resp-row {
-    padding: 6px 0; font-size: 12px; line-height: 1.6;
-    border-bottom: 1px solid var(--border-subtle);
-  }
-  .resp-row:last-child { border-bottom: none; }
+  .tab:hover { border-color: var(--accent-soft); color: var(--text-secondary); }
+  .tab.active { background: rgba(94,106,210,0.1); border-color: var(--accent-soft); color: var(--accent-soft); }
+  .stab { display: none; }
+  .stab.active { display: block; }
   .resp-model {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; color: var(--text-quaternary);
-    margin-bottom: 3px;
+    font-size: 11px; color: var(--text-quaternary); margin-bottom: 4px;
   }
-  .resp-text { color: var(--text-secondary); }
-
-  .rank-row {
-    display: flex; align-items: center; gap: 8px;
-    padding: 6px 0; border-bottom: 1px solid var(--border-subtle);
-    font-size: 12px;
-  }
-  .rank-row:last-child { border-bottom: none; }
-  .rank-num {
-    font-size: 13px; font-weight: 510; color: var(--accent-soft);
-    width: 16px; text-align: center;
-  }
-  .rank-name {
-    flex: 1; font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; color: var(--text-secondary);
-  }
-  .rank-pts {
-    font-size: 11px; color: var(--text-quaternary);
+  .resp-text {
+    color: var(--text-secondary); font-size: 14px; line-height: 1.7;
   }
 
-  .synthesis {
-    margin: 12px;
-    padding: 14px;
-    background: rgba(94,106,210,0.06);
-    border: 1px solid rgba(94,106,210,0.15);
-    border-radius: var(--radius-card);
-    font-size: 12px; line-height: 1.7; color: var(--text-secondary);
-  }
-  .synth-label {
+  .rank-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .rank-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .rank-num { font-size: 13px; font-weight: 510; color: var(--accent-soft); width: 16px; text-align: center; }
+  .rank-name { flex: 1; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-secondary); }
+  .rank-pts { font-size: 11px; color: var(--text-quaternary); }
+
+  .eval-model {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; color: var(--accent-soft);
-    margin-bottom: 6px;
-    font-weight: 500;
+    font-size: 11px; color: var(--text-quaternary); margin-bottom: 4px;
   }
+  .eval-text { color: var(--text-tertiary); font-size: 13px; line-height: 1.6; }
 
-  .right-actions {
-    display: flex; gap: 6px; padding: 0 12px 16px;
+  .chairman-box {
+    padding: 14px; background: rgba(94,106,210,0.06);
+    border: 1px solid rgba(94,106,210,0.12); border-radius: var(--radius-card);
+    margin-top: 8px;
   }
-  .btn-ghost {
-    flex: 1; padding: 6px 0;
-    background: rgba(255,255,255,0.02);
-    border: 1px solid var(--border-standard);
-    border-radius: var(--radius-btn);
-    color: var(--text-secondary);
-    font-size: 12px; font-weight: 510; font-family: inherit;
-    cursor: pointer; transition: all 0.12s;
+  .chairman-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--accent-soft); margin-bottom: 6px; font-weight: 500;
   }
-  .btn-ghost:hover {
-    border-color: var(--border-standard);
-    background: rgba(255,255,255,0.04);
-  }
+  .chairman-text { color: var(--text-secondary); font-size: 14px; line-height: 1.7; }
 
-  /* Scrollbar */
+  .loading {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px; color: var(--text-quaternary); font-size: 13px;
+  }
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border-standard);
+    border-top-color: var(--accent-soft);
+    border-radius: 50%; animation: spin 0.6s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
   ::-webkit-scrollbar { width: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.1); }
 </style>
 </head>
 <body>
 <div class="app">
 
-  <!-- ─── SIDEBAR ─── -->
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="logo">
-        <div class="logo-mark">⚖</div>
-        <span class="logo-text">LLM Council</span>
-      </div>
-      <button class="new-btn">New deliberation</button>
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <div class="logo-mark">⚖</div>
+      <span class="logo-text">LLM Council</span>
     </div>
-    <div class="conv-list">
-      <div class="conv-item active">
-        <div class="conv-title">Evaluation velocity in engineering</div>
-        <div class="conv-meta">
-          <span class="pill pill-green">converged</span>
-          <span>3 rounds</span>
-        </div>
-      </div>
-      <div class="conv-item">
-        <div class="conv-title">Postgres vs SQLite for CLI tool</div>
-        <div class="conv-meta">
-          <span class="pill pill-indigo">council</span>
-          <span>1 round</span>
-        </div>
-      </div>
-      <div class="conv-item">
-        <div class="conv-title">Monolith or microservices</div>
-        <div class="conv-meta">
-          <span class="pill pill-indigo">autocouncil</span>
-          <span>2 rounds</span>
-        </div>
-      </div>
-      <div class="conv-item">
-        <div class="conv-title">Best approach to learn Rust</div>
-        <div class="conv-meta">
-          <span class="pill pill-indigo">in progress</span>
-          <span>round 2/5</span>
-        </div>
-      </div>
-    </div>
-    <div class="sidebar-footer">chipoto69/llm-council · v0.2.0</div>
-  </aside>
+    <button class="new-btn" id="newBtn" onclick="newConversation()">New deliberation</button>
+  </div>
+  <div class="conv-list" id="convList">
+    <div class="empty-convs">No conversations yet</div>
+  </div>
+  <div style="padding:12px;border-top:1px solid var(--border-subtle);font-size:11px;color:var(--text-quaternary);text-align:center;">
+    chipoto69/llm-council · v0.2.0
+  </div>
+</aside>
 
-  <!-- ─── MAIN ─── -->
-  <main class="main">
-    <div class="cmd-bar">
-      <input class="cmd-input" placeholder="Ask the council anything..." autofocus value="">
-      <div class="cmd-mode">
-        <button class="active">1×</button>
-        <button>∞</button>
-      </div>
-      <button class="cmd-submit">Convene</button>
+<main class="main" id="main">
+  <div class="cmd-bar" id="cmdBar">
+    <input class="cmd-input" id="queryInput" placeholder="Ask the council anything..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}">
+    <button class="cmd-submit" id="sendBtn" onclick="sendMessage()">Convene</button>
+  </div>
+  <div class="messages" id="messages">
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;opacity:0.3;text-align:center;gap:8px;">
+      <h2 style="font-size:22px;font-weight:400;color:var(--text-primary);letter-spacing:-0.704px;">Council Chamber</h2>
+      <p style="font-size:14px;color:var(--text-quaternary);max-width:400px;">Select a conversation or ask a question to convene the council.</p>
     </div>
-    <div class="cmd-meta">
-      <span>Council: Qwen 3.5 · DeepSeek V4 · GLM 5.1</span>
-      <span>Chair: DeepSeek V4</span>
-    </div>
-
-    <div class="dashboard">
-      <!-- Model Lineup -->
-      <div class="card">
-        <div class="card-hdr">
-          <span class="card-hdr-title">Council Members</span>
-          <span class="pill pill-green" style="font-size:10px;">3 active</span>
-        </div>
-        <div class="model-row">
-          <div class="model-dot dot-on"></div>
-          <div class="model-info">
-            <div class="model-name">Qwen 3.5 235B</div>
-            <div class="model-prov">OpenRouter</div>
-          </div>
-          <span class="model-tag">Member</span>
-        </div>
-        <div class="model-row">
-          <div class="model-dot dot-on"></div>
-          <div class="model-info">
-            <div class="model-name">DeepSeek V4 Pro</div>
-            <div class="model-prov">DeepSeek</div>
-          </div>
-          <span class="model-tag chair">Chair</span>
-        </div>
-        <div class="model-row">
-          <div class="model-dot dot-on"></div>
-          <div class="model-info">
-            <div class="model-name">GLM 5.1</div>
-            <div class="model-prov">OpenRouter</div>
-          </div>
-          <span class="model-tag">Member</span>
-        </div>
-      </div>
-
-      <!-- Performance -->
-      <div class="card">
-        <div class="card-hdr">
-          <span class="card-hdr-title">Performance</span>
-          <span style="font-size:11px;color:var(--text-quaternary);">Last 24h</span>
-        </div>
-        <div class="stat-grid">
-          <div class="stat">
-            <div class="stat-val">87%</div>
-            <div class="stat-label">Convergence rate</div>
-          </div>
-          <div class="stat">
-            <div class="stat-val">2.1</div>
-            <div class="stat-label">Avg rounds</div>
-          </div>
-          <div class="stat">
-            <div class="stat-val">63%</div>
-            <div class="stat-label">Autocouncil use</div>
-          </div>
-          <div class="stat">
-            <div class="stat-val">12</div>
-            <div class="stat-label">Deliberations</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Activity -->
-      <div class="card card-full">
-        <div class="card-hdr">
-          <span class="card-hdr-title">Recent Deliberations</span>
-        </div>
-        <div class="act-item">
-          <div class="act-dot act-g"></div>
-          <span class="act-q">Most undervalued skill in software engineering?</span>
-          <span class="act-meta">2m ago</span>
-        </div>
-        <div class="act-item">
-          <div class="act-dot act-a"></div>
-          <span class="act-q">Postgres vs SQLite for a CLI tool?</span>
-          <span class="act-meta">18m ago</span>
-        </div>
-        <div class="act-item">
-          <div class="act-dot act-a"></div>
-          <span class="act-q">gRPC or REST for internal services?</span>
-          <span class="act-meta">1h ago</span>
-        </div>
-        <div class="act-item">
-          <div class="act-dot act-g"></div>
-          <span class="act-q">Architecture for real-time trading system?</span>
-          <span class="act-meta">3h ago</span>
-        </div>
-        <div class="act-item">
-          <div class="act-dot act-a"></div>
-          <span class="act-q">Rust vs Go for infrastructure tooling?</span>
-          <span class="act-meta">6h ago</span>
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <!-- ─── RIGHT PANEL ─── -->
-  <aside class="right">
-    <div class="right-hdr">
-      <span class="right-title">Live Deliberation</span>
-      <span class="right-status">live</span>
-    </div>
-
-    <!-- Stage 1 -->
-    <div class="stage-block">
-      <div class="stage-hdr">
-        Stage 1 · First Opinions
-        <div class="stage-dot" style="background:var(--green);"></div>
-      </div>
-      <div class="stage-content">
-        <div class="resp-row">
-          <div class="resp-model">deepseek-v4-pro</div>
-          <div class="resp-text">Evaluation velocity under abundance — the ability to sort signal from noise...</div>
-        </div>
-        <div class="resp-row">
-          <div class="resp-model">qwen/qwen3-235b</div>
-          <div class="resp-text">Architectural taste — knowing what NOT to build, not what you can build...</div>
-        </div>
-        <div class="resp-row">
-          <div class="resp-model">z-ai/glm-5.1</div>
-          <div class="resp-text">Debugging intuition — forming correct hypotheses about failure modes...</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Stage 2 -->
-    <div class="stage-block">
-      <div class="stage-hdr">
-        Stage 2 · Peer Rankings
-        <div class="stage-dot"></div>
-      </div>
-      <div class="stage-content">
-        <div class="rank-row">
-          <span class="rank-num">1</span>
-          <span class="rank-name">deepseek-v4-pro</span>
-          <span class="rank-pts">8 pts</span>
-        </div>
-        <div class="rank-row">
-          <span class="rank-num">2</span>
-          <span class="rank-name">qwen/qwen3-235b</span>
-          <span class="rank-pts">5 pts</span>
-        </div>
-        <div class="rank-row">
-          <span class="rank-num">3</span>
-          <span class="rank-name">z-ai/glm-5.1</span>
-          <span class="rank-pts">3 pts</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Stage 3 -->
-    <div class="synthesis">
-      <div class="synth-label">deepseek-v4-pro · Chairman</div>
-      The council converges: the most undervalued skill is evaluation velocity under AI-generated abundance. When output is cheap, judgment becomes the bottleneck. Not "subtraction" as a meme — taste under time pressure. The engineers who matter in 5 years aren't the fastest typists but those who can look at a screen of plausible code and say "no" in 10 seconds — and be right 9 times out of 10.
-    </div>
-
-    <div class="right-actions">
-      <button class="btn-ghost">Export MD</button>
-      <button class="btn-ghost">Copy JSON</button>
-      <button class="btn-ghost">Rerun</button>
-    </div>
-  </aside>
+  </div>
+</main>
 
 </div>
+
+<script>
+const API = 'http://localhost:8001';
+let currentConv = null;
+
+async function api(path, opts = {}) {
+  const res = await fetch(`${API}${path}`, {
+    headers: { 'Content-Type': 'application/json' },
+    ...opts,
+  });
+  if (!res.ok) throw new Error(`${res.status}`);
+  return res.json();
+}
+
+async function loadConversations() {
+  const convs = await api('/api/conversations');
+  const list = document.getElementById('convList');
+  if (!convs.length) {
+    list.innerHTML = '<div class="empty-convs">No conversations yet</div>';
+    return;
+  }
+  list.innerHTML = convs.map(c => `
+    <div class="conv-item${c.id === currentConv ? ' active' : ''}" onclick="selectConversation('${c.id}')">
+      <div class="conv-title">${esc(c.title || 'Untitled')}</div>
+      <div class="conv-meta">${c.message_count} messages</div>
+    </div>
+  `).join('');
+}
+
+async function newConversation() {
+  const btn = document.getElementById('newBtn');
+  btn.disabled = true; btn.textContent = 'Creating...';
+  try {
+    const c = await api('/api/conversations', { method: 'POST', body: '{}' });
+    currentConv = c.id;
+    await loadConversations();
+    renderMessages(c);
+    document.getElementById('queryInput').focus();
+  } catch(e) { alert('Failed: ' + e.message); }
+  btn.disabled = false; btn.textContent = 'New deliberation';
+}
+
+async function selectConversation(id) {
+  currentConv = id;
+  const c = await api(`/api/conversations/${id}`);
+  await loadConversations();
+  renderMessages(c);
+}
+
+function renderMessages(conv) {
+  const el = document.getElementById('messages');
+  if (!conv.messages.length) {
+    el.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;opacity:0.3;"><p style="font-size:14px;color:var(--text-quaternary);">Awaiting your question...</p></div>`;
+    return;
+  }
+  el.innerHTML = conv.messages.map((m, i) => {
+    if (m.role === 'user') {
+      return `<div class="msg-group">
+        <div class="user-msg"><div class="label">You</div><div class="content">${esc(m.content)}</div></div>
+      </div>`;
+    }
+    return renderAssistant(m, i);
+  }).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function renderAssistant(m, idx) {
+  const s1 = m.stage1 || [];
+  const s2 = m.stage2 || [];
+  const s3 = m.stage3 || {};
+  const meta = m.metadata || {};
+  const labels = meta.label_to_model || {};
+  const ranks = meta.aggregate_rankings || [];
+
+  // Stage 1: Tabbed responses
+  let s1html = '';
+  if (s1.length) {
+    const tabId = 's1t' + idx;
+    s1html = `<div class="stage">
+      <div class="stage-hdr">Stage 1 · First Opinions<div class="dot"></div></div>
+      <div class="stage-body">
+        <div class="tabs">${s1.map((r,i) => `<button class="tab${i===0?' active':''}" onclick="switchTab('${tabId}',${i})">${modelShort(r.model)}</button>`).join('')}</div>
+        ${s1.map((r,i) => `<div class="stab${i===0?' active':''}" id="${tabId}-${i}">
+          <div class="resp-model">${r.model}</div>
+          <div class="resp-text">${md(r.response)}</div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  // Stage 2: Peer rankings
+  let s2html = '';
+  if (s2.length) {
+    const tabId2 = 's2t' + idx;
+    s2html = `<div class="stage">
+      <div class="stage-hdr">Stage 2 · Peer Rankings<div class="dot"></div></div>
+      <div class="stage-body">
+        ${ranks.length ? `<div class="rank-list">
+          ${ranks.map((r,i) => `<div class="rank-row"><span class="rank-num">${i+1}</span><span class="rank-name">${r.model}</span><span class="rank-pts">avg ${r.average_rank}</span></div>`).join('')}
+        </div>` : ''}
+        <div class="tabs">${s2.map((r,i) => `<button class="tab${i===0?' active':''}" onclick="switchTab('${tabId2}',${i})">${modelShort(r.model)}</button>`).join('')}</div>
+        ${s2.map((r,i) => `<div class="stab${i===0?' active':''}" id="${tabId2}-${i}">
+          <div class="eval-model">${r.model} evaluates</div>
+          <div class="eval-text">${md(r.ranking)}</div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  // Stage 3: Chairman
+  let s3html = '';
+  if (s3.response) {
+    s3html = `<div class="stage">
+      <div class="stage-hdr">Stage 3 · Chairman Synthesis<div class="dot" style="background:var(--accent-soft);"></div></div>
+      <div class="stage-body">
+        <div class="chairman-box">
+          <div class="chairman-label">${s3.model} · Chairman</div>
+          <div class="chairman-text">${md(s3.response)}</div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  return `<div class="msg-group">${s1html}${s2html}${s3html}</div>`;
+}
+
+async function sendMessage() {
+  const input = document.getElementById('queryInput');
+  const q = input.value.trim();
+  if (!q) return;
+  if (!currentConv) await newConversation();
+  if (!currentConv) return;
+
+  const btn = document.getElementById('sendBtn');
+  const msgs = document.getElementById('messages');
+  input.disabled = true; btn.disabled = true; btn.textContent = '...';
+
+  // Show loading
+  msgs.innerHTML += `<div class="msg-group"><div class="user-msg"><div class="label">You</div><div class="content">${esc(q)}</div></div>
+    <div class="loading" id="ld"><div class="spinner"></div> Council deliberating...</div></div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+  input.value = '';
+
+  try {
+    await api(`/api/conversations/${currentConv}/message`, {
+      method: 'POST',
+      body: JSON.stringify({ content: q }),
+    });
+    const c = await api(`/api/conversations/${currentConv}`);
+    renderMessages(c);
+    await loadConversations();
+  } catch(e) {
+    document.getElementById('ld').innerHTML = `<div style="color:#ef4444;padding:12px;">Failed: ${esc(e.message)}. Is the backend running on port 8001?</div>`;
+  }
+
+  input.disabled = false; btn.disabled = false; btn.textContent = 'Convene';
+  input.focus();
+}
+
+function switchTab(prefix, idx) {
+  const btns = document.querySelectorAll(`[onclick^="switchTab('${prefix}'"]`);
+  btns.forEach((b, i) => {
+    b.classList.toggle('active', i === idx);
+    document.getElementById(`${prefix}-${i}`)?.classList.toggle('active', i === idx);
+  });
+}
+
+function modelShort(name) {
+  const parts = name.split('/');
+  const last = parts[parts.length - 1];
+  if (last.length > 20) return last.slice(0, 18) + '..';
+  return last;
+}
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+function md(text) {
+  if (!text) return '';
+  return text
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/`(.+?)`/g, '<code style="background:rgba(255,255,255,0.04);padding:1px 4px;border-radius:3px;font-family:JetBrains Mono,monospace;font-size:12px;">$1</code>')
+    .replace(/\n/g, '<br>');
+}
+
+// Init
+loadConversations();
+document.getElementById('queryInput').focus();
+</script>
 </body>
 </html>
